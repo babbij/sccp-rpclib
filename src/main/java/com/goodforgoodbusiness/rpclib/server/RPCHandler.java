@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
+import com.goodforgoodbusiness.rpclib.RPCCommon;
 import com.goodforgoodbusiness.rpclib.server.receiver.RPCReceiver;
 import com.goodforgoodbusiness.vertx.stream.InputWriteStream;
 import com.goodforgoodbusiness.vertx.stream.WriteOutputStream;
@@ -30,7 +31,7 @@ public class RPCHandler implements Handler<RoutingContext> {
 	
 	@Override
 	public void handle(RoutingContext ctx) {
-		ctx.response().putHeader(HttpHeaders.CONTENT_TYPE, "application/x-protobuf");
+		ctx.response().putHeader(HttpHeaders.CONTENT_TYPE, RPCCommon.PROTOBUF_CONTENT_TYPE);
 		ctx.response().setChunked(true);
 		
 		InputWriteStream ws;

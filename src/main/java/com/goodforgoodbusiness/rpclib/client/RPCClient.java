@@ -7,11 +7,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
+import com.goodforgoodbusiness.rpclib.RPCCommon;
 import com.goodforgoodbusiness.rpclib.client.response.RPCResponseHandler;
 import com.google.protobuf.Any;
 import com.google.protobuf.Message;
 
 import io.netty.buffer.ByteBufOutputStream;
+import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.WebClient;
 
@@ -19,12 +21,10 @@ import io.vertx.ext.web.client.WebClient;
  * Basic bridging code to use protobufs over Vert.x as an RPC
  */
 public class RPCClient {
-	private static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
-	
 	private final WebClient client;
 	private final URI rpcURI;
 	
-	public RPCClient(WebClient client, URI rpcURI) {
+	public RPCClient(Vertx vertx, WebClient client, URI rpcURI) {
 		this.client = client;
 		this.rpcURI = rpcURI;
 	}
@@ -45,7 +45,7 @@ public class RPCClient {
 		}
 		
 		client.postAbs(rpcURI.toString())
-			.putHeader(CONTENT_TYPE, APPLICATION_OCTET_STREAM)
+			.putHeader(CONTENT_TYPE, RPCCommon.PROTOBUF_CONTENT_TYPE)
 			.as(handler.getBodyCodec())
 			.sendBuffer(Buffer.buffer(bos.buffer()), handler)
 		;

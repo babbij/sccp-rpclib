@@ -4,14 +4,12 @@ import static java.util.stream.StreamSupport.stream;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Iterator;
 import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
 
 import com.goodforgoodbusiness.rpclib.client.RPCClientException;
 import com.goodforgoodbusiness.vertx.stream.InputWriteStream;
-import com.google.protobuf.Any;
 import com.google.protobuf.Message;
 
 import io.vertx.core.AsyncResult;
@@ -27,17 +25,13 @@ import io.vertx.ext.web.codec.BodyCodec;
 public class RPCStreamResponseHandler<T extends Message> implements RPCResponseHandler {
 	private final Logger log = Logger.getLogger(RPCStreamResponseHandler.class);
 	
-	private final int q;
-	
 	private final Class<T> clazz;
 	private final Future<Stream<RPCResponse<T>>> future;
 
 	private final InputWriteStream writeStream;
 	private final InputStream inputStream;
 	
-	public RPCStreamResponseHandler(int q, Vertx vertx, Class<T> clazz, Future<Stream<RPCResponse<T>>> future) {
-		this.q = q;
-		
+	public RPCStreamResponseHandler(Vertx vertx, Class<T> clazz, Future<Stream<RPCResponse<T>>> future) {
 		this.clazz = clazz;
 		this.future = future;
 		
@@ -73,53 +67,16 @@ public class RPCStreamResponseHandler<T extends Message> implements RPCResponseH
 		
 	@Override
 	public void handle(AsyncResult<HttpResponse<Void>> result) {
-		System.out.println("Handle " + q);
-		
 		if (result.succeeded()) {
 			if (httpOK(result.result().statusCode())) {
 				// build an iterator that pulls Message one by one from an iterator
-				var iterator = new Iterator<RPCResponse<T>>() {
-					@Override
-					public boolean hasNext() {
-						try {
-							return inputStream.available() > 0;
-						} 
-						catch (IOException e) {
-							return false;
-						}
-					}
-
-					@Override
-					public RPCResponse<T> next() {
-						return () -> {
-							try {
-								var obj = Any.parseDelimitedFrom(inputStream);
-								if (obj.is(clazz)) {
-									return obj.unpack(clazz);
-								}
-								else {
-									throw new RPCClientException("Unexpected class returned: " + clazz.getName());
-								}
-							}
-							catch (IOException e) {
-								throw new RPCClientException(e);
-							}
-							finally {
-								try {
-									if (inputStream.available() < 0) {
-										inputStream.close();
-									}
-								}
-								catch (IOException e) {
-									// do nothing
-								}
-							}
-						};
-					}
-				};
-				
+				var iterator = new RPCStreamIterator<>(clazz, inputStream);
 				Iterable<RPCResponse<T>> iterable = () -> iterator;
-				future.complete(stream(iterable.spliterator(), false));
+				
+				var stream = stream(iterable.spliterator(), false);
+				stream.onClose(() -> iterator.close());
+				
+				future.complete(stream);
 			}
 			else {
 				var e = new RPCClientException("RPC returned " + result.result().statusCode());
