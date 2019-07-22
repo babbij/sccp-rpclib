@@ -7,8 +7,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import com.goodforgoodbusiness.rpclib.server.receiver.RPCReceiver;
-import com.goodforgoodbusiness.rpclib.stream.InputWriteStream;
-import com.goodforgoodbusiness.rpclib.stream.WriteOutputStream;
+import com.goodforgoodbusiness.vertx.stream.InputWriteStream;
+import com.goodforgoodbusiness.vertx.stream.WriteOutputStream;
 import com.google.protobuf.Any;
 
 import io.vertx.core.Handler;
@@ -51,6 +51,7 @@ public class RPCHandler implements Handler<RoutingContext> {
 		executorService.execute(() -> {
 			try {
 				var any = Any.parseFrom(is);
+				is.close();
 				
 				var rpc = rpcs.stream()
 					.filter(r -> r.test(any))
@@ -59,14 +60,13 @@ public class RPCHandler implements Handler<RoutingContext> {
 				
 				if (rpc.isPresent()) {
 					rpc.get().exec(any, os);
-					ctx.response().end();
 				}
 				else {
-					ctx.fail(400);
+					ctx.fail(new BadRequestException("Did not find inbound handler for " + any.getTypeUrl()));
 				}
 			}
 			catch (IOException e) {
-				ctx.fail(400);
+				ctx.fail(new BadRequestException("I/O Exception occurred", e));
 			}
 		});
 		

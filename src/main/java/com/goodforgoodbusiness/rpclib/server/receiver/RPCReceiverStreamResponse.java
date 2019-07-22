@@ -30,11 +30,17 @@ public class RPCReceiverStreamResponse<T extends Message, U extends Message> imp
 	 */
 	@Override
 	public void exec(Any any, OutputStream os) throws IOException {
-		var obj = any.unpack(type);
-		var itr = func.apply(obj).iterator();
-				
-		while (itr.hasNext()) {
-			Any.pack(itr.next()).writeDelimitedTo(os);
+		try {
+			var obj = any.unpack(type);
+			var itr = func.apply(obj).iterator();
+					
+			while (itr.hasNext()) {
+				Any.pack(itr.next()).writeDelimitedTo(os);
+				os.flush();
+			}
+		}
+		finally {
+			os.close();	
 		}
 	}
 }

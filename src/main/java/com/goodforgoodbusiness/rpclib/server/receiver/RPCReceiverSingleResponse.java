@@ -32,8 +32,16 @@ public class RPCReceiverSingleResponse<T extends Message, U extends Message> imp
 	 */
 	@Override
 	public void exec(Any any, OutputStream os) throws IOException {
-		var obj = any.unpack(type);
-		var res = func.apply(obj);
-		Any.pack(res).writeDelimitedTo(os);
+		try {
+			var obj = any.unpack(type);
+			
+			var res = func.apply(obj);
+			Any.pack(res).writeDelimitedTo(os);
+			
+			os.flush();
+		}
+		finally {
+			os.close();
+		}
 	}
 }

@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import com.goodforgoodbusiness.rpclib.client.RPCClientException;
-import com.goodforgoodbusiness.rpclib.stream.InputWriteStream;
+import com.goodforgoodbusiness.vertx.stream.InputWriteStream;
 import com.google.protobuf.Any;
 import com.google.protobuf.Message;
 

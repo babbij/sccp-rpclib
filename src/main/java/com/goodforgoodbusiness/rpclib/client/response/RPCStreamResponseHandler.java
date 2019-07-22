@@ -7,8 +7,10 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
+import org.apache.log4j.Logger;
+
 import com.goodforgoodbusiness.rpclib.client.RPCClientException;
-import com.goodforgoodbusiness.rpclib.stream.InputWriteStream;
+import com.goodforgoodbusiness.vertx.stream.InputWriteStream;
 import com.google.protobuf.Any;
 import com.google.protobuf.Message;
 
@@ -23,13 +25,19 @@ import io.vertx.ext.web.codec.BodyCodec;
  * NOTE: this should not be used from the Vert.x event loop thread.
  */
 public class RPCStreamResponseHandler<T extends Message> implements RPCResponseHandler {
+	private final Logger log = Logger.getLogger(RPCStreamResponseHandler.class);
+	
+	private final int q;
+	
 	private final Class<T> clazz;
 	private final Future<Stream<RPCResponse<T>>> future;
 
 	private final InputWriteStream writeStream;
 	private final InputStream inputStream;
 	
-	public RPCStreamResponseHandler(Vertx vertx, Class<T> clazz, Future<Stream<RPCResponse<T>>> future) {
+	public RPCStreamResponseHandler(int q, Vertx vertx, Class<T> clazz, Future<Stream<RPCResponse<T>>> future) {
+		this.q = q;
+		
 		this.clazz = clazz;
 		this.future = future;
 		
@@ -39,6 +47,7 @@ public class RPCStreamResponseHandler<T extends Message> implements RPCResponseH
 			iws = new InputWriteStream();
 		}
 		catch (IOException e) {
+			log.error(e);
 			future.fail(e);
 		}
 		
@@ -64,6 +73,8 @@ public class RPCStreamResponseHandler<T extends Message> implements RPCResponseH
 		
 	@Override
 	public void handle(AsyncResult<HttpResponse<Void>> result) {
+		System.out.println("Handle " + q);
+		
 		if (result.succeeded()) {
 			if (httpOK(result.result().statusCode())) {
 				// build an iterator that pulls Message one by one from an iterator
