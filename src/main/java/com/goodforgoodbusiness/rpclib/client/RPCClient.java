@@ -32,7 +32,7 @@ public class RPCClient {
 	/**
 	 * Send a message, collecting replies as an {@link InputStream}
 	 */
-	public <T> void send(Message m, RPCResponseHandler<T> handler) {
+	public void send(Message m, RPCResponseHandler handler) {
 		var any = Any.pack(m);
 		var bos = new ByteBufOutputStream(directBuffer(any.getSerializedSize()));
 		

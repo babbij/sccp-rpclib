@@ -1,44 +1,50 @@
 package com.goodforgoodbusiness.rpclib.client.response;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import com.goodforgoodbusiness.rpclib.client.RPCClientException;
-import com.goodforgoodbusiness.rpclib.stream.ReadStreamToInputStream;
+import com.goodforgoodbusiness.rpclib.stream.InputWriteStream;
 import com.google.protobuf.Any;
 import com.google.protobuf.Message;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.streams.ReadStream;
-import io.vertx.core.streams.WriteStream;
-import io.vertx.ext.reactivestreams.ReactiveReadStream;
-import io.vertx.ext.reactivestreams.ReactiveWriteStream;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.codec.BodyCodec;
 
 /**
  * Translates what comes back from an RPC call in to a single response.
  */
-public class RPCSingleResponseHandler<T extends Message> implements RPCResponseHandler<String> {
+public class RPCSingleResponseHandler<T extends Message> implements RPCResponseHandler {
 	private final Class<T> clazz;
-	private final Future<T> future;
+	private final Future<RPCResponse<T>> future;
 	
-	private final WriteStream<Buffer> writeStream;
-	private final ReadStream<Buffer> readStream;
-	
+	private final InputWriteStream writeStream;
 	private final InputStream inputStream;
 
-	public RPCSingleResponseHandler(Vertx vertx, Class<T> clazz, Future<T> future) {
+	public RPCSingleResponseHandler(Vertx vertx, Class<T> clazz, Future<RPCResponse<T>> future) {
 		this.clazz = clazz;
 		this.future = future;
 		
-		this.writeStream = ReactiveWriteStream.writeStream(vertx);
-		this.readStream = ReactiveReadStream.readStream();
-		this.inputStream = new ReadStreamToInputStream(readStream);
+		InputWriteStream iws = null;
+		
+		try {
+			iws = new InputWriteStream();
+		}
+		catch (IOException e) {
+			future.fail(e);
+		}
+		
+		if (iws != null) {
+			this.writeStream = iws;
+			this.inputStream = writeStream.getInputStream();
+		}
+		else {
+			this.writeStream = null;
+			this.inputStream = null;
+		}
 	}
 	
 	@Override
@@ -47,41 +53,60 @@ public class RPCSingleResponseHandler<T extends Message> implements RPCResponseH
 	}
 	
 	@Override
-	public BodyCodec<String> getBodyCodec() {
-		return BodyCodec.string();
-		
-//		return BodyCodec.buffer();
+	public BodyCodec<Void> getBodyCodec() {
+		return BodyCodec.pipe(writeStream);
 	}
-		
+	
 	@Override
-	public void handle(AsyncResult<HttpResponse<String>> result) {
+	public void handle(AsyncResult<HttpResponse<Void>> result) {
 		if (result.succeeded()) {
 			if (httpOK(result.result().statusCode())) {
-				try {
-					var bis = new ByteArrayInputStream(result.result().body().getBytes());
-					var obj = Any.parseDelimitedFrom(bis);
-					
-					if (obj.is(clazz)) {
-						future.complete(obj.unpack(clazz));
+				// use the supplier encapsulation to get work done in the original caller thread
+				future.complete(() -> {
+					try {
+						var obj = Any.parseDelimitedFrom(inputStream);
+						if (obj.is(clazz)) {
+							return obj.unpack(clazz);
+						}
+						else {
+							throw new RPCClientException("Unexpected class returned: " + clazz.getName());
+						}
 					}
-					else {
-						var e = new ClassCastException(clazz.getName());
-						e.fillInStackTrace();
-						future.fail(e);
+					catch (IOException e) {
+						throw new RPCClientException(e);
 					}
-				}
-				catch (IOException e) {
-					future.fail(e);
-				}
+					finally {
+						try {
+							inputStream.close();
+						}
+						catch (IOException e) {
+							// do nothing
+						}
+					}
+				});
 			}
 			else {
 				var e = new RPCClientException("RPC returned " + result.result().statusCode());
 				e.fillInStackTrace();
 				future.fail(e);
+				
+				try {
+					inputStream.close();
+				}
+				catch (IOException e_) {
+					// do nothing
+				}
 			}
 		}
 		else {
 			future.fail(result.cause());
+
+			try {
+				inputStream.close();
+			}
+			catch (IOException e_) {
+				// do nothing
+			}
 		}
 	}
 }
