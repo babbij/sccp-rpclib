@@ -29,7 +29,7 @@ class RPCStreamIterator<T extends Message> implements Iterator<RPCResponse<T>>, 
 	@Override
 	public boolean hasNext() {
 		inputStream.mark(1);
-		
+
 		try {
 			try {
 				var result = inputStream.read() >= 0;
