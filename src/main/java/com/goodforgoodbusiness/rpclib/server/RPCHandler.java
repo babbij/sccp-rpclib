@@ -63,11 +63,11 @@ public class RPCHandler implements Handler<RoutingContext> {
 					rpc.get().exec(any, os);
 				}
 				else {
-					ctx.fail(new BadRequestException("Did not find inbound handler for " + any.getTypeUrl()));
+					ctx.fail(new RPCExecutionException("Did not find inbound handler for " + any.getTypeUrl()));
 				}
 			}
-			catch (IOException e) {
-				ctx.fail(new BadRequestException("I/O Exception occurred", e));
+			catch (IOException | RPCExecutionException e) {
+				ctx.fail(e);
 			}
 		});
 		
