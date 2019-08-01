@@ -1,4 +1,4 @@
-package com.goodforgoodbusiness.rpclib.server;
+package com.colabriq.rpclib.server;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -6,10 +6,10 @@ import java.io.OutputStream;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import com.goodforgoodbusiness.rpclib.RPCCommon;
-import com.goodforgoodbusiness.rpclib.server.receiver.RPCReceiver;
-import com.goodforgoodbusiness.vertx.stream.InputWriteStream;
-import com.goodforgoodbusiness.vertx.stream.WriteOutputStream;
+import com.colabriq.rpclib.RPCCommon;
+import com.colabriq.rpclib.server.receiver.RPCReceiver;
+import com.colabriq.vertx.stream.InputWriteStream;
+import com.colabriq.vertx.stream.WriteOutputStream;
 import com.google.protobuf.Any;
 
 import io.vertx.core.Handler;

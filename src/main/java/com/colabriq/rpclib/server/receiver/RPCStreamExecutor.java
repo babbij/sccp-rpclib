@@ -1,4 +1,4 @@
-package com.goodforgoodbusiness.rpclib.server.receiver;
+package com.colabriq.rpclib.server.receiver;
 
 import java.util.stream.Stream;
 

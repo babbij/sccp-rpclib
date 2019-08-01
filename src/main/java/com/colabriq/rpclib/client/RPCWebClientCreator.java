@@ -1,4 +1,4 @@
-package com.goodforgoodbusiness.rpclib.client;
+package com.colabriq.rpclib.client;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpVersion;

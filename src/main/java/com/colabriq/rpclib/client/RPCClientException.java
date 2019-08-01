@@ -1,4 +1,4 @@
-package com.goodforgoodbusiness.rpclib.client;
+package com.colabriq.rpclib.client;
 
 public class RPCClientException extends Exception {
 	public RPCClientException(String message) {

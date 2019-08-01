@@ -1,4 +1,4 @@
-package com.goodforgoodbusiness.rpclib.client.response;
+package com.colabriq.rpclib.client.response;
 
 import static java.util.stream.StreamSupport.stream;
 
@@ -8,8 +8,8 @@ import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
 
-import com.goodforgoodbusiness.rpclib.client.RPCClientException;
-import com.goodforgoodbusiness.vertx.stream.InputWriteStream;
+import com.colabriq.rpclib.client.RPCClientException;
+import com.colabriq.vertx.stream.InputWriteStream;
 import com.google.protobuf.Message;
 
 import io.vertx.core.AsyncResult;

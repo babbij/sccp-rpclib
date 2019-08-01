@@ -1,6 +1,6 @@
-package com.goodforgoodbusiness.rpclib.client.response;
+package com.colabriq.rpclib.client.response;
 
-import com.goodforgoodbusiness.rpclib.client.RPCClientException;
+import com.colabriq.rpclib.client.RPCClientException;
 
 /**
  * Returned by the RPC calls.

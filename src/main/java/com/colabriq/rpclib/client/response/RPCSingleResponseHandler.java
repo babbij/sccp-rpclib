@@ -1,10 +1,10 @@
-package com.goodforgoodbusiness.rpclib.client.response;
+package com.colabriq.rpclib.client.response;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.goodforgoodbusiness.rpclib.client.RPCClientException;
-import com.goodforgoodbusiness.vertx.stream.InputWriteStream;
+import com.colabriq.rpclib.client.RPCClientException;
+import com.colabriq.vertx.stream.InputWriteStream;
 import com.google.protobuf.Any;
 import com.google.protobuf.Message;
 

@@ -1,4 +1,4 @@
-package com.goodforgoodbusiness.rpclib.client.response;
+package com.colabriq.rpclib.client.response;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;

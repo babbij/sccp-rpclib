@@ -1,9 +1,9 @@
-package com.goodforgoodbusiness.rpclib.server.receiver;
+package com.colabriq.rpclib.server.receiver;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-import com.goodforgoodbusiness.rpclib.server.RPCExecutionException;
+import com.colabriq.rpclib.server.RPCExecutionException;
 import com.google.protobuf.Any;
 import com.google.protobuf.Message;
 

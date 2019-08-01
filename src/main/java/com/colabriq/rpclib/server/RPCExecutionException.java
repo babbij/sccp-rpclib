@@ -1,4 +1,4 @@
-package com.goodforgoodbusiness.rpclib.server;
+package com.colabriq.rpclib.server;
 
 public class RPCExecutionException extends Exception {
 	public RPCExecutionException(String message) {

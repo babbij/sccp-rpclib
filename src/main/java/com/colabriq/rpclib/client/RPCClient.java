@@ -1,4 +1,4 @@
-package com.goodforgoodbusiness.rpclib.client;
+package com.colabriq.rpclib.client;
 
 import static com.google.common.net.HttpHeaders.CONTENT_TYPE;
 
@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
-import com.goodforgoodbusiness.rpclib.RPCCommon;
-import com.goodforgoodbusiness.rpclib.client.response.RPCResponseHandler;
+import com.colabriq.rpclib.RPCCommon;
+import com.colabriq.rpclib.client.response.RPCResponseHandler;
 import com.google.protobuf.Any;
 import com.google.protobuf.Message;
 

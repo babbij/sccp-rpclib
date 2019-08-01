@@ -1,4 +1,4 @@
-package com.goodforgoodbusiness.rpclib.client.response;
+package com.colabriq.rpclib.client.response;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -8,7 +8,7 @@ import java.util.NoSuchElementException;
 
 import org.apache.log4j.Logger;
 
-import com.goodforgoodbusiness.rpclib.client.RPCClientException;
+import com.colabriq.rpclib.client.RPCClientException;
 import com.google.protobuf.Any;
 import com.google.protobuf.Message;
 
