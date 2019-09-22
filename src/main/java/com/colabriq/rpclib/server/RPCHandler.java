@@ -1,18 +1,18 @@
 package com.colabriq.rpclib.server;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import com.colabriq.rpclib.RPCCommon;
 import com.colabriq.rpclib.server.receiver.RPCReceiver;
 import com.colabriq.vertx.stream.InputWriteStream;
-import com.colabriq.vertx.stream.WriteOutputStream;
 import com.google.protobuf.Any;
 
 import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.ext.web.RoutingContext;
 
@@ -45,7 +45,7 @@ public class RPCHandler implements Handler<RoutingContext> {
 		}
 		
 		InputStream is = ws.getInputStream();
-		OutputStream os = new WriteOutputStream(ctx.response());
+		// OutputStream os = new WriteOutputStream(ctx.response());
 		
 		// must be done in a separate thread so the blocking code in the protobuf
 		// parser/encoder does not block the Vert.x thread.
@@ -60,7 +60,10 @@ public class RPCHandler implements Handler<RoutingContext> {
 				;
 				
 				if (rpc.isPresent()) {
+					// XXX temporarily do this with buffered streams 
+					var os = new ByteArrayOutputStream();
 					rpc.get().exec(any, os);
+					ctx.response().end(Buffer.buffer(os.toByteArray()));
 				}
 				else {
 					ctx.fail(new RPCExecutionException("Did not find inbound handler for " + any.getTypeUrl()));

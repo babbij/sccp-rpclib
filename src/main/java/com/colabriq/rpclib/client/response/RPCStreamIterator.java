@@ -63,6 +63,7 @@ class RPCStreamIterator<T extends Message> implements Iterator<RPCResponse<T>>, 
 					}
 				}
 				catch (IOException e) {
+					close();
 					throw new RPCClientException(e);
 				}
 				finally {

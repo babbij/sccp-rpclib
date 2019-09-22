@@ -1,31 +1,16 @@
 package com.colabriq.rpclib.client.response;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.ext.web.client.HttpResponse;
-import io.vertx.ext.web.codec.BodyCodec;
+import java.io.InputStream;
 
-public interface RPCResponseHandler extends Handler<AsyncResult<HttpResponse<Void>>> {
+public interface RPCResponseHandler {	
 	/**
-	 * Check if an HTTP response is 2xx
+	 * Handle a success response from the remote server
 	 */
-	public default boolean httpOK(int status) {
-		return status >= 200 && status < 300;
-	}
+	public void success(InputStream is);
 	
 	/**
-	 * Handle an error before the response is actually handled.
+	 * Handle a failure response from the remote server
 	 */
-	public void preFail(Exception e);
+	public void failure(Exception e);
 	
-	/**
-	 * Return the {@link BodyCodec} to use for the handle method.
-	 */
-	public BodyCodec<Void> getBodyCodec();
-	
-	/**
-	 * Handle a response from the server (redeclared from Handler)
-	 */
-	@Override
-	public void handle(AsyncResult<HttpResponse<Void>> event);
 }
