@@ -3,7 +3,6 @@ package com.colabriq.rpclib.client;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PipedInputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
@@ -28,9 +27,11 @@ public class RPCClient {
 	}
 	
 	private final URI rpcURI;
+	private final HttpClient client;
 	
 	public RPCClient(URI rpcURI) {
 		this.rpcURI = rpcURI;
+		this.client = HttpClient.newBuilder().build();
 	}
 	
 	/**
@@ -50,9 +51,7 @@ public class RPCClient {
 			    .POST(HttpRequest.BodyPublishers.ofByteArray(os.toByteArray()))
 			    .build();
 			
-			var future = HttpClient.newBuilder()
-				.build()
-				.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream());
+			var future = client.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream());
 			
 			var response = future.get();
 			

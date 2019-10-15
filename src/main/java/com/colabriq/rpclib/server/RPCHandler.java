@@ -2,13 +2,11 @@ package com.colabriq.rpclib.server;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import com.colabriq.rpclib.RPCCommon;
 import com.colabriq.rpclib.server.receiver.RPCReceiver;
-import com.colabriq.vertx.stream.InputWriteStream;
 import com.google.protobuf.Any;
 
 import io.vertx.core.Handler;
@@ -25,8 +23,8 @@ public class RPCHandler implements Handler<RoutingContext> {
 	private final Set<RPCReceiver> rpcs;
 	
 	public RPCHandler(ExecutorService executorService, Set<RPCReceiver> rpcs) {
-		this.executorService = executorService;
 		this.rpcs = rpcs;
+		this.executorService = executorService;
 	}
 	
 	@Override
@@ -34,25 +32,16 @@ public class RPCHandler implements Handler<RoutingContext> {
 		ctx.response().putHeader(HttpHeaders.CONTENT_TYPE, RPCCommon.PROTOBUF_CONTENT_TYPE);
 		ctx.response().setChunked(true);
 		
-		InputWriteStream ws;
+		// XXX should move to using non-blocking streams all the way here
+		// but these are not yet stable, so just read the request in for now
 		
-		try {
-			ws = new InputWriteStream();
-		}
-		catch (IOException e) {
-			ctx.fail(e);
-			return;
-		}
+		var data = ctx.getBody().getBytes();
 		
-		InputStream is = ws.getInputStream();
-		// OutputStream os = new WriteOutputStream(ctx.response());
+		// still do this in another thread as it could take some time to perform an RPC call
 		
-		// must be done in a separate thread so the blocking code in the protobuf
-		// parser/encoder does not block the Vert.x thread.
 		executorService.execute(() -> {
 			try {
-				var any = Any.parseFrom(is);
-				is.close();
+				var any = Any.parseFrom(data);
 				
 				var rpc = rpcs.stream()
 					.filter(r -> r.test(any))
@@ -76,8 +65,5 @@ public class RPCHandler implements Handler<RoutingContext> {
 				ctx.fail(new RPCExecutionException("I/O Exception occurred", e));
 			}
 		});
-		
-		var pipe = ctx.request().pipe();
-		pipe.to(ws);
 	}
 }
